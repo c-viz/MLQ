@@ -55,7 +55,8 @@ const columns = 7;
 const rows = 6;
 var currentPlayer = 0;
 var radChecker = 0.375;
-var radHole = 0.45;
+var radHole = 0.4;
+var radButton = 0.35;
 
 var x = d3.scaleLinear().domain([-1, columns+1]).range([0, size]);
 var y = d3.scaleLinear().domain([-1, columns+1]).range([size, 0]);
@@ -86,7 +87,7 @@ function update() {
     //.enter().append("circle")
     .join("circle")
     .attr("class", "checker")
-    .attr("r", x(radChecker)-x(0))
+    .attr("r", x(radButton)-x(0))
     .attr("cx", d => x(d.x))
     .classed("player0", d => d.colour == 0)
     .classed("player1", d => d.colour == 1)
