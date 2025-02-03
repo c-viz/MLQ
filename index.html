@@ -27,10 +27,7 @@
 </head>
 <body>
 
-<div id="leveltext"></div>
 <svg id="svg">
-  <!--<path d="M0 0 L100 0 L100 200 L 0 200 Z M 50 50 A 10 10 0 1 1 50 70 A 10 10 0 1 1 50 50"
-  style="fill:red;stroke:green;stroke-width:3" fill-rule="evenodd" />-->
   <g id="checkers"></g>
   <g id="buttons"></g>
   <path id="board"></path>
@@ -87,11 +84,12 @@ function update() {
     //.enter().append("circle")
     .join("circle")
     .attr("class", "checker")
-    .attr("r", 12)
+    .attr("r", x(0.4)-x(0))
     .attr("cx", d => x(d.x))
-    .attr("cy", d => y(d.y))
     .classed("player0", d => d.colour == 0)
-    .classed("player1", d => d.colour == 1);
+    .classed("player1", d => d.colour == 1)
+    .transition()
+    .attr("cy", d => y(d.y));
 
     const strands = strandsGroup.selectAll(".strand")
       .data(data.strands)
@@ -186,8 +184,8 @@ const strandsGroup = d3.select("#strands");
 
 
 function drawCircle(context, cx, cy, radius) {
-  context.moveTo(x(cx)+radius, y(cy));
-  context.arc(x(cx), y(cy), radius, 0, 2 * Math.PI);
+  context.moveTo(x(cx+radius), y(cy));
+  context.arc(x(cx), y(cy), x(radius)-x(0), 0, 2 * Math.PI);
   context.closePath();
 }
 var path = d3.path();
@@ -201,7 +199,7 @@ path.closePath();
 for(var i=0; i< columns; i++) {
   data.arrangement[i] = [];
   for(var j=0; j< rows; j++) {
-    drawCircle(path,i,j, 15);
+    drawCircle(path,i,j, 0.45);
   }
 }
 
@@ -224,7 +222,7 @@ const buttons = buttonGroup.selectAll(".button")
   .data(buttonPos)
   .join("circle")
   .attr("class", "button")
-  .attr("r", 12)
+  .attr("r", x(0.4)-x(0))
   .attr("cx", d => x(d.x))
   .attr("cy", d => y(d.y))
   .classed("player0", d => currentPlayer == 0)
