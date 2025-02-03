@@ -14,7 +14,7 @@
       font-size: 2em;
     }
     .strand { stroke: #ccc;
-           stroke-width: 8px;}
+           stroke-width: 2px;}
     .player0 { fill: yellow;}
     .player1 { fill: red;}
     .button {
@@ -54,9 +54,11 @@ const size = Math.min(width, height);
 const columns = 7;
 const rows = 6;
 var currentPlayer = 0;
-var radChecker = 0.375;
-var radHole = 0.4;
-var radButton = 0.35;
+var radChecker = 0.325;
+var radHole = 0.35;
+var radButton = 0.3;
+
+var cornerRadius = 0.45;
 
 var x = d3.scaleLinear().domain([-1, columns+1]).range([0, size]);
 var y = d3.scaleLinear().domain([-1, columns+1]).range([size, 0]);
@@ -96,7 +98,6 @@ function update() {
 
     const strands = strandsGroup.selectAll(".strand")
       .data(data.strands)
-      //.enter().append("circle")
       .join("line")
       .attr("class", "strand")
       .attr("x1", d=>x(d[0].x))
@@ -191,8 +192,6 @@ function drawCircle(context, cx, cy, radius) {
   context.arc(x(cx), y(cy), x(radius)-x(0), 0, 2 * Math.PI);
   context.closePath();
 }
-
-var cornerRadius = 0.55;
   
 var path = d3.path();
 // path.moveTo(x(-0.5),y(-0.5))
