@@ -54,6 +54,7 @@ const size = Math.min(width, height);
 const columns = 7;
 const rows = 6;
 var currentPlayer = 0;
+var rad = 0.4;
 
 var x = d3.scaleLinear().domain([-1, columns+1]).range([0, size]);
 var y = d3.scaleLinear().domain([-1, columns+1]).range([size, 0]);
@@ -199,7 +200,7 @@ path.closePath();
 for(var i=0; i< columns; i++) {
   data.arrangement[i] = [];
   for(var j=0; j< rows; j++) {
-    drawCircle(path,i,j, 0.45);
+    drawCircle(path,i,j, rad+0.075);
   }
 }
 
@@ -222,7 +223,7 @@ const buttons = buttonGroup.selectAll(".button")
   .data(buttonPos)
   .join("circle")
   .attr("class", "button")
-  .attr("r", x(0.4)-x(0))
+  .attr("r", x(rad)-x(0))
   .attr("cx", d => x(d.x))
   .attr("cy", d => y(d.y))
   .classed("player0", d => currentPlayer == 0)
