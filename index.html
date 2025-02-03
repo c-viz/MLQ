@@ -190,17 +190,28 @@ function drawCircle(context, cx, cy, radius) {
   context.closePath();
 }
 var path = d3.path();
-path.moveTo(x(-0.5),y(-0.5))
-path.lineTo(x(columns-0.5),y(-0.5))
-path.lineTo(x(columns-0.5),y(rows-0.5))
-path.lineTo(x(-0.5),y(rows-0.5))
+// path.moveTo(x(-0.5),y(-0.5))
+// path.lineTo(x(columns-0.5),y(-0.5))
+// path.lineTo(x(columns-0.5),y(rows-0.5))
+// path.lineTo(x(-0.5),y(rows-0.5))
+
+path.moveTo(x(0),y(-0.5))
+path.lineTo(x(columns-1.5),y(-0.5))
+path.arc(x(columns-1.5),y(0),x(0.5)-x(0),Math.PI * 0.5, 0)
+
+path.lineTo(x(columns-0.5),y(rows-1.5))
+path.arc(x(columns-1.5),y(rows-1.5),x(0.5)-x(0), 0, Math.PI * 1.5)
+  
+path.lineTo(x(0),y(rows-0.5))
+path.arc(x(0),y(rows-1.5),x(0.5)-x(0), Math.PI * 1.5, Math.PI)
+  
 path.closePath();
 
 
 for(var i=0; i< columns; i++) {
   data.arrangement[i] = [];
   for(var j=0; j< rows; j++) {
-    drawCircle(path,i,j, rad+0.075);
+    drawCircle(path,i,j, rad+0.1);
   }
 }
 
