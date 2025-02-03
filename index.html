@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ramsey Game</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { margin: 0; display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: black;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 2em;
+    }
+    .strand { stroke: #ccc;
+           stroke-width: 12px;}
+    .player0 { fill: blue;}
+    .player1 { fill: red;}
+    .button {
+      fill: white;
+    }
+    .button:hover {
+      fill:grey;
+    }
+  </style>
+</head>
+<body>
+
+<div id="leveltext"></div>
+<svg id="svg">
+  <!--<path d="M0 0 L100 0 L100 200 L 0 200 Z M 50 50 A 10 10 0 1 1 50 70 A 10 10 0 1 1 50 50"
+  style="fill:red;stroke:green;stroke-width:3" fill-rule="evenodd" />-->
+  <g id="checkers"></g>
+  <g id="buttons"></g>
+  <path id="board"></path>
+  <g id="strands"></g>
+</svg>
+
+<script>
+ // get level number from url
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+var level = NaN;
+if(urlParams.has('level'))
+{
+  level = parseInt(urlParams.get('level'));
+}
+
+
+
+// Configuration
+const width = Math.min(window.innerWidth, 800);
+const height = Math.min(window.innerHeight, 800);
+const size = Math.min(width, height);
+
+const columns = 7;
+const rows = 6;
+var currentPlayer = 0;
+
+var x = d3.scaleLinear().domain([-1, columns+1]).range([0, size]);
+var y = d3.scaleLinear().domain([-1, columns+1]).range([size, 0]);
+
+
+var data =  {
+  checkers: [
+  ],
+  arrangement:[],
+  queues: [
+  ],
+  strands: []
+}
+
+for(var i=0; i< columns; i++) {
+  data.arrangement[i] = [];
+  for(var j=0; j< rows; j++) {
+    //newchecker = {x:i, y:j, colour: (i+j)%2}
+    //data.checkers.push(newchecker);
+    //data.arrangement[i][j] = newchecker;
+  }
+}
+
+function update() {
+
+  const checkers = checkersGroup.selectAll(".checker")
+    .data(data.checkers)
+    //.enter().append("circle")
+    .join("circle")
+    .attr("class", "checker")
+    .attr("r", 12)
+    .attr("cx", d => x(d.x))
+    .attr("cy", d => y(d.y))
+    .classed("player0", d => d.colour == 0)
+    .classed("player1", d => d.colour == 1);
+
+    const strands = strandsGroup.selectAll(".strand")
+      .data(data.strands)
+      //.enter().append("circle")
+      .join("line")
+      .attr("class", "strand")
+      .attr("x1", d=>x(d[0].x))
+      .attr("x2", d=>x(d[1].x))
+      .attr("y1", d=>y(d[0].y))
+      .attr("y2", d=>y(d[1].y));
+}
+
+function collapse(row) {
+  if(row == 0) {
+    return false;
+  }
+  var weight = 0;
+  for(var i=columns-1; i>=0; i--) {
+    if (data.arrangement[i][row-1] != undefined) {
+      weight--;
+    }
+    if (data.arrangement[i][row] != undefined) {
+      weight++;
+    }
+    //console.log(row,i, weight);
+    if(weight > 0) {
+      data.arrangement[i][row-1] = data.arrangement[i][row];
+      data.arrangement[i][row] = undefined;
+      data.arrangement[i][row-1].y--;
+      return true;
+    }
+  }
+  return false;
+}
+
+function calculateQueues() {
+  data.queues = [];
+  for(var row=rows-1; row>=0; row--) {
+    for(var col=0; col<columns; col++) {
+      if(data.arrangement[col][row] != undefined) {
+        var inserted = false;
+        console.log("inspecting", row, col);
+        for(var i=0; i<data.queues.length; i++) {
+          var queue = data.queues[i];
+          var tail = queue[queue.length-1];
+          console.log(tail);
+          if (tail.y == row+1 && tail.x <= col) {
+            console.log("insert into queue");
+            queue.push(data.arrangement[col][row]);
+            inserted = true;
+            break;
+          }
+        }
+        if(!inserted) {
+          data.queues.push([data.arrangement[col][row]]);
+        }
+      }
+    }
+  }
+  data.strands = []
+  for(var i=0; i<data.queues.length; i++) {
+    for(var j=0; j<data.queues[i].length-1; j++) {
+      data.strands.push([data.queues[i][j], data.queues[i][j+1]]);
+    }
+  }
+}
+
+function insert(column, player) {
+  if(data.arrangement[column][rows-1] != undefined) {
+    return false;
+  }
+  newchecker = {x:column, y:rows-1, colour: player}
+  data.checkers.push(newchecker);
+  data.arrangement[column][rows-1] = newchecker;
+  for(var row = rows-1; row>0; row--) {
+    //console.log("collapsing row", row);
+    if(!collapse(row)) {
+      break;
+    }
+  }
+  calculateQueues();
+
+  update();
+
+
+}
+
+const svg = d3.select("#svg");
+svg.attr("width", size).attr("height", size);
+const checkersGroup = d3.select("#checkers");
+const strandsGroup = d3.select("#strands");
+
+
+function drawCircle(context, cx, cy, radius) {
+  context.moveTo(x(cx)+radius, y(cy));
+  context.arc(x(cx), y(cy), radius, 0, 2 * Math.PI);
+  context.closePath();
+}
+var path = d3.path();
+path.moveTo(x(-0.5),y(-0.5))
+path.lineTo(x(columns-0.5),y(-0.5))
+path.lineTo(x(columns-0.5),y(rows-0.5))
+path.lineTo(x(-0.5),y(rows-0.5))
+path.closePath();
+
+
+for(var i=0; i< columns; i++) {
+  data.arrangement[i] = [];
+  for(var j=0; j< rows; j++) {
+    drawCircle(path,i,j, 15);
+  }
+}
+
+
+console.log(path.toString());
+
+const board = d3.select("#board")
+    .attr("d", path.toString())
+    .attr("stroke", "blue")
+    .attr("fill", "blue")
+    .attr("fill-rule", "evenodd");
+
+var buttonPos = [];
+for(var i=0; i<columns; i++) {
+  buttonPos.push({x:i, y:rows, colIndex:i});
+}
+
+const buttonGroup = d3.select("#buttons");
+const buttons = buttonGroup.selectAll(".button")
+  .data(buttonPos)
+  .join("circle")
+  .attr("class", "button")
+  .attr("r", 12)
+  .attr("cx", d => x(d.x))
+  .attr("cy", d => y(d.y))
+  .classed("player0", d => currentPlayer == 0)
+  .classed("player1", d => currentPlayer == 1)
+  .on("click", function(event,d) {
+    insert(d.colIndex, currentPlayer);
+    currentPlayer = 1-currentPlayer;
+  });
+
+
+
+</script>
+
+</body>
+</html>
