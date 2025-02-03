@@ -189,21 +189,26 @@ function drawCircle(context, cx, cy, radius) {
   context.arc(x(cx), y(cy), x(radius)-x(0), 0, 2 * Math.PI);
   context.closePath();
 }
+
+var cornerRadius = 0.5;
+  
 var path = d3.path();
 // path.moveTo(x(-0.5),y(-0.5))
 // path.lineTo(x(columns-0.5),y(-0.5))
 // path.lineTo(x(columns-0.5),y(rows-0.5))
 // path.lineTo(x(-0.5),y(rows-0.5))
 
-path.moveTo(x(0),y(-0.5))
-path.lineTo(x(columns-1),y(-0.5))
-path.arc(x(columns-1),y(0),x(0.5)-x(0),Math.PI * 0.5, 0)
-
-path.lineTo(x(columns-0.5),y(rows-1.5))
-path.arc(x(columns-1.5),y(rows-1.5),x(0.5)-x(0), 0, Math.PI * 1.5)
+path.moveTo(x(columns-1+cornerRadius),y(0))
+path.arc(x(columns-1),y(0),x(cornerRadius)-x(0), 0,Math.PI * 0.5)
   
-path.lineTo(x(0),y(rows-0.5))
-path.arc(x(0),y(rows-1.5),x(0.5)-x(0), Math.PI * 1.5, Math.PI)
+path.lineTo(x(0),y((-1)*cornerRadius)))
+path.arc(x(0),y(0),x(cornerRadius)-x(0), Math.PI * 0.5, Math.PI)
+
+path.lineTo(x((-1)*cornerRadius)),y(rows-1))
+path.arc(x(0),y(rows-1),x(cornerRadius))-x(0), Math.PI, Math.PI * 1.5)
+  
+path.lineTo(x(columns-1),y(rows-1+cornerRadius))
+path.arc(x(columns-1),y(rows-1+cornerRadius),x(cornerRadius)-x(0), Math.PI * 1.5, 2*Math.PI)
   
 path.closePath();
 
