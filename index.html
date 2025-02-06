@@ -87,14 +87,21 @@ function update() {
   const checkers = checkersGroup.selectAll(".checker")
     .data(data.checkers)
     //.enter().append("circle")
-    .join("circle")
-    .attr("class", "checker")
-    .attr("r", x(radButton)-x(0))
-    .attr("cx", d => x(d.x))
-    .classed("player0", d => d.colour == 0)
-    .classed("player1", d => d.colour == 1)
-    .transition()
-    .attr("cy", d => y(d.y));
+    .join(function(enter) {
+      enter.append("circle")
+           .attr("class", "checker")
+           .attr("r", x(radButton)-x(0))
+           .attr("cx", d => x(d.x))
+           .classed("player0", d => d.colour == 0)
+           .classed("player1", d => d.colour == 1)
+           .attr("cy", d => y(rows))
+           .transition()
+           .attr("cy", d => y(d.y));
+    },
+    function(update) {
+      update.transition()
+            .attr("cy", d => y(d.y));
+    })
 
     const strands = strandsGroup.selectAll(".strand")
       .data(data.strands)
@@ -105,6 +112,7 @@ function update() {
       .attr("x2", d=>x(d[1].x))
       .attr("y1", d=>y(d[0].y))
       .attr("y2", d=>y(d[1].y));
+
 }
 
 function collapse(row) {
@@ -178,6 +186,7 @@ function insert(column, player) {
   calculateQueues();
 
   update();
+  return true;
 
 
 }
@@ -193,8 +202,8 @@ function drawCircle(context, cx, cy, radius) {
   context.arc(x(cx), y(cy), x(radius)-x(0), 0, 2 * Math.PI);
   context.closePath();
 }
-  
-var path = d3.path(); 
+
+var path = d3.path();
 path.moveTo(x(columns-1+cornerRadius),y(0))
 path.arc(x(columns-1),y(0),x(cornerRadius)-x(0), 0, Math.PI * 0.5)
 path.lineTo(x(0),y((-1)*cornerRadius))
@@ -238,9 +247,11 @@ const buttons = buttonGroup.selectAll(".button")
   .classed("player0", d => currentPlayer == 0)
   .classed("player1", d => currentPlayer == 1)
   .on("click", function(event,d) {
-    insert(d.colIndex, currentPlayer);
-    // This should only happen if the move is valid...
-    currentPlayer = 1-currentPlayer;
+    if(insert(d.colIndex, currentPlayer))
+    {
+      currentPlayer = 1-currentPlayer;
+    }
+
   });
 
 
