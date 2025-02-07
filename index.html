@@ -107,7 +107,7 @@ function update() {
       .data(data.strands)
       .join("line")
       .attr("class", "strand")
-      .transition()
+      //.transition()
       .attr("x1", d=>x(d[0].x))
       .attr("x2", d=>x(d[1].x))
       .attr("y1", d=>y(d[0].y))
