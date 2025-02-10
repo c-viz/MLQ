@@ -20,8 +20,15 @@
     .button {
       fill: white;
     }
-    .button:hover {
-      fill:grey;
+    .player0.button:hover {
+      fill:#ffff00ba;
+    }
+    .player1.button:hover {
+      fill: #ff0000ba;;
+    }
+    #gameinfo {
+      color: #ccc;
+      text-align: center;
     }
   </style>
 </head>
@@ -33,6 +40,7 @@
   <path id="board"></path>
   <g id="strands"></g>
 </svg>
+<div id="gameinfo"></div>
 
 <script>
  // get level number from url
@@ -82,8 +90,8 @@ for(var i=0; i< columns; i++) {
   }
 }
 
-function update() {
-
+function update(highlightedCheckers) {
+  console.log(highlightedCheckers);
   const checkers = checkersGroup.selectAll(".checker")
     .data(data.checkers)
     //.enter().append("circle")
@@ -95,13 +103,22 @@ function update() {
            .classed("player0", d => d.colour == 0)
            .classed("player1", d => d.colour == 1)
            .attr("cy", d => y(rows))
-           .transition()
+           .classed("highlighted", d => highlightedCheckers.includes(d))
+           .transition(250)
            .attr("cy", d => y(d.y));
     },
     function(update) {
-      update.transition()
+      update.classed("highlighted", d => highlightedCheckers.includes(d))
+            .transition(250)
             .attr("cy", d => y(d.y));
-    })
+    });
+
+    checkersGroup.selectAll(".highlighted")
+      .transition()
+      .delay(250)
+      .attr("stroke", "white")
+      .attr("stroke-width", "4px");
+
 
     const strands = strandsGroup.selectAll(".strand")
       .data(data.strands)
@@ -144,13 +161,13 @@ function calculateQueues() {
     for(var col=0; col<columns; col++) {
       if(data.arrangement[col][row] != undefined) {
         var inserted = false;
-        console.log("inspecting", row, col);
+        //console.log("inspecting", row, col);
         for(var i=0; i<data.queues.length; i++) {
           var queue = data.queues[i];
           var tail = queue[queue.length-1];
-          console.log(tail);
+          //console.log(tail);
           if (tail.y == row+1 && tail.x <= col) {
-            console.log("insert into queue");
+            //console.log("insert into queue");
             queue.push(data.arrangement[col][row]);
             inserted = true;
             break;
@@ -184,11 +201,90 @@ function insert(column, player) {
     }
   }
   calculateQueues();
-
-  update();
   return true;
+}
 
+function find4At(col, row) {
+  //checks to the right, above and diagonally left up and diagonally right up
+  // returns undefined, if no player wins, otherwise it returns the positions of the 4 checkers.
+  var steps = [[0,1],[1,0],[1,1],[-1,1]]
 
+  if(data.arrangement[col][row] == undefined) {
+    return undefined;
+  }
+  var player = data.arrangement[col][row].colour;
+  for(const step of steps) {
+    var curCol = col;
+    var curRow = row;
+    var found4 = true;
+    //console.log("inverstigating", col, row, "in direction", step);
+    positions = [data.arrangement[col][row]];
+    for(var i=0;i<3;i++) {
+      curCol += step[0];
+      curRow += step[1];
+      //console.log(curCol, curRow);
+      if(curCol<0 || curCol>=columns || curRow<0 || curRow >= rows) {
+        found4 = false;
+        //console.log("breaking out of bounds");
+        break;
+      }
+      if(data.arrangement[curCol][curRow] == undefined || data.arrangement[curCol][curRow].colour != player) {
+        found4 = false;
+        break;
+      }
+      positions.push(data.arrangement[curCol][curRow]);
+    }
+    if(found4) {
+      return {player:player, positions}
+    }
+  }
+  return undefined;
+}
+
+function find4() {
+  var highlighted = [];
+  var player0_has4 = false;
+  var player1_has4 = false;
+  for(var col=0; col<columns; col++) {
+    for(var row=0; row<rows; row++) {
+      var result = find4At(col, row);
+      if(result != undefined) {
+        if(!player0_has4 && result.player == 0) {
+          player0_has4 = true;
+          highlighted.push(...result.positions);
+        }
+        if(!player1_has4 && result.player == 1) {
+          player1_has4 = true;
+          highlighted.push(...result.positions);
+        }
+      }
+    }
+  }
+  // change the outcume to not return a text but only some encoding which player is winning and create the corrsepoiding text later
+  outcome = {
+    text: "",
+    highlightedCheckers: highlighted
+  }
+
+  if(player0_has4 && player1_has4) {
+    outcome.text = "Tie";
+  } else if(player0_has4) {
+    outcome.text = "Yellow wins";
+  } else if(player1_has4) {
+    outcome.text = "Red wins";
+  } else {
+    return undefined;
+  }
+  return outcome;
+}
+
+function boardIsFull() {
+  for(var col=0; col<columns; col++) {
+    if(data.arrangement[col][rows-1] == undefined) {
+      return false;
+    }
+  }
+  return true;
 }
 
 const svg = d3.select("#svg");
@@ -223,8 +319,6 @@ for(var i=0; i< columns; i++) {
 }
 
 
-console.log(path.toString());
-
 const board = d3.select("#board")
     .attr("d", path.toString())
     .attr("stroke", "blue")
@@ -247,10 +341,35 @@ const buttons = buttonGroup.selectAll(".button")
   .classed("player0", d => currentPlayer == 0)
   .classed("player1", d => currentPlayer == 1)
   .on("click", function(event,d) {
+    highlightedCheckers = []
     if(insert(d.colIndex, currentPlayer))
     {
       currentPlayer = 1-currentPlayer;
+      var result = find4();
+      if(result == undefined && boardIsFull()) {
+        result = {
+          text: "Draw",
+          highlightedCheckers: []
+        };
+      }
+
+      if(result != undefined) {
+        highlightedCheckers = result.highlightedCheckers;
+        d3.select("#gameinfo")
+          .html(result.text);
+        buttonGroup.selectAll(".button")
+          .classed("player0", false)
+          .classed("player1", false)
+          .on("click", function() {});
+      } else {
+        buttonGroup.selectAll(".button")
+          .classed("player0", d => currentPlayer == 0)
+          .classed("player1", d => currentPlayer == 1);
+      }
+
+      update(highlightedCheckers);
     }
+
 
   });
 
