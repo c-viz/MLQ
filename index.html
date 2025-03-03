@@ -27,8 +27,18 @@
       fill: #ff0000ba;;
     }
     #gameinfo {
-      color: #ccc;
-      text-align: center;
+      fill: #ccc;
+      stroke: #ccc;
+      text-anchor: middle;
+      dominant-baseline: hanging;
+    }
+    #gameinfo.player0 {
+      fill: yellow;
+      stroke: yellow;
+    }
+    #gameinfo.player1 {
+      fill: red;
+      stroke: red;
     }
   </style>
 </head>
@@ -40,26 +50,29 @@
   <path id="board"></path>
   <g id="strands"></g>
 </svg>
-<div id="gameinfo"></div>
 
 <script>
- // get level number from url
+ // get game settings from url
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
-var level = NaN;
-if(urlParams.has('level'))
+var nCols = 7;
+var nRows = 6;
+if(urlParams.has('columns'))
 {
-  level = parseInt(urlParams.get('level'));
+  nCols = parseInt(urlParams.get('columns'));
 }
-
+if(urlParams.has('rows'))
+{
+  nRows = parseInt(urlParams.get('rows'));
+}
 
 // Configuration
 const width = Math.min(window.innerWidth, 800);
 const height = Math.min(window.innerHeight, 800);
 const size = Math.min(width, height);
 
-const columns = 7;
-const rows = 6;
+const columns = nCols;
+const rows = nRows;
 var currentPlayer = 0;
 var radChecker = 0.325;
 var radHole = 0.35;
@@ -67,8 +80,18 @@ var radButton = 0.3;
 
 var cornerRadius = 0.45;
 
-var x = d3.scaleLinear().domain([-1, columns+1]).range([0, size]);
-var y = d3.scaleLinear().domain([-1, columns+1]).range([size, 0]);
+if(columns < rows+1)
+{
+  var diff = (size-(size*(columns+1))/(rows+2))/2;
+  var x = d3.scaleLinear().domain([-1, columns]).range([diff, size-diff]);
+  var y = d3.scaleLinear().domain([-1, rows+1]).range([size, 0]);
+}
+else
+{
+  var diff = (size-(size*(rows+2))/(columns+1))/2;
+  var x = d3.scaleLinear().domain([-1, columns]).range([0, size]);
+  var y = d3.scaleLinear().domain([-1, rows+1]).range([size-diff, diff]);
+}
 
 
 var data =  {
@@ -266,11 +289,11 @@ function find4() {
   }
 
   if(player0_has4 && player1_has4) {
-    outcome.text = "Tie";
+    outcome.text = "tie";
   } else if(player0_has4) {
-    outcome.text = "Yellow wins";
+    outcome.text = "player0";
   } else if(player1_has4) {
-    outcome.text = "Red wins";
+    outcome.text = "player1";
   } else {
     return undefined;
   }
@@ -286,8 +309,10 @@ function boardIsFull() {
   return true;
 }
 
+// Creating the svg
 const svg = d3.select("#svg");
 svg.attr("width", size).attr("height", size);
+svg.append("text").attr("id","gameinfo").attr("x",size/2).attr("y",y(rows));
 const checkersGroup = d3.select("#checkers");
 const strandsGroup = d3.select("#strands");
 
@@ -347,19 +372,37 @@ const buttons = buttonGroup.selectAll(".button")
       var result = find4();
       if(result == undefined && boardIsFull()) {
         result = {
-          text: "Draw",
+          text: "draw",
           highlightedCheckers: []
         };
       }
 
       if(result != undefined) {
         highlightedCheckers = result.highlightedCheckers;
+        var outText = "";
+
+        switch(result.text){
+          case "player0":
+            outText = "Yellow wins!";
+            break;
+          case "player1":
+            outText = "Red wins!";
+            break;  
+          case "tie":
+            outText = "It is a tie!";
+            break;
+          case "draw":
+            outText = "It is a draw.";
+            break;
+        }
+
         d3.select("#gameinfo")
-          .html(result.text);
+          .html(outText)
+          .classed("player0", result.text == "player0")
+          .classed("player1", result.text == "player1");
         buttonGroup.selectAll(".button")
-          .classed("player0", false)
-          .classed("player1", false)
-          .on("click", function() {});
+          .on("click", function() {})
+          .remove();
       } else {
         buttonGroup.selectAll(".button")
           .classed("player0", d => currentPlayer == 0)
