@@ -30,7 +30,6 @@
       fill: #ccc;
       stroke: #ccc;
       text-anchor: middle;
-      dominant-baseline: hanging;
     }
     #gameinfo.player0 {
       fill: yellow;
@@ -312,7 +311,7 @@ function boardIsFull() {
 // Creating the svg
 const svg = d3.select("#svg");
 svg.attr("width", size).attr("height", size);
-svg.append("text").attr("id","gameinfo").attr("x",size/2).attr("y",y(rows));
+svg.append("text").attr("id","gameinfo").attr("x",size/2).attr("y",y(rows-0.25));
 const checkersGroup = d3.select("#checkers");
 const strandsGroup = d3.select("#strands");
 
