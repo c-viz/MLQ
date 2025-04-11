@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>MLQ Game</title>
+  <title>MLQ4</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
@@ -56,11 +56,11 @@ const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 var nCols = 7;
 var nRows = 6;
-if(urlParams.has('columns'))
+if(urlParams.has('columns') && !isNaN(parseInt(urlParams.get('columns'))))
 {
   nCols = parseInt(urlParams.get('columns'));
 }
-if(urlParams.has('rows'))
+if(urlParams.has('rows') && !isNaN(parseInt(urlParams.get('rows'))))
 {
   nRows = parseInt(urlParams.get('rows'));
 }
