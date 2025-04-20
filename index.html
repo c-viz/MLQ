@@ -11,22 +11,83 @@
       background-color: black;
       font-family: Arial, Helvetica, sans-serif;
       font-size: 2em;
-      color: #c4acbd;
+      color: #e1da64;
+      text-align: center;
+    }
+  </style>
+  <style>
+  input[type=number]{
+      align-items: center;
+      height:30px;
+      width: 50px;
+      margin: 10px;
+      padding: 7px;
+      box-sizing: border-box;
+      border: 3px solid #e1da64;
+      border-radius: 3px;
+    }
+  </style>
+  <style>
+    input[type="submit"] {
+    background-color: #ada50e;
+    width: 180px;
+    display: block;
+    margin: 0px auto;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 18px;
+    font-family: "Courier New", Courier, monospace;
+    color: white;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    }
+  </style>
+  <style>
+    input[type="submit"]:hover {
+        background-color: rgb(174, 25, 25);
     }
   </style>
 </head>
+
 <body>
-<h1>Welcome!</h1>
+  
+  <div class="header" style="color: #e1da64;">
+    <h1 >MLQ4</h1>
+    <h4 style="margin-top:-40px">A game on non-wrapping multiline queues</h4>
+    <p style="font-size:large;text-align:justify;color:whitesmoke; width:750px;">
+       The objective of the game is to align 4 checkers in a row, column or diagonal of the board... the same as in Connect 4&trade;. <strong>But be careful!</strong> The checkers move in a different way in this variant of the game: <br>
+    </p>
+    <p style="font-size:large;text-align:center;color:#5072e1; width:750px;">
+      <strong>
+        The checkers go down until they get stopped by another checker in the same column or in a column on the right.
+      </strong>
+    </p>
+  </div>
+  <div style="color:#e1da64">
+    <h2 style="margin-bottom: 20px;">
+      How to play
+    </h2>
+    <p style="font-size:large;text-align:justify;color:whitesmoke; width:750px;">
+      Players alternate dropping checkers in a rectangular grid by clicking the buttons on top of the board. This will make the corresponding checker to start dropping from the upper part of the columns selected. As mentioned before, it will go gown until it reaches the bottom of the board or it is stopped by another checker (of any color) that is in a column weakly to the right. 
+    </p>
+    
+  </div>
+  
 
-<h2>Game setup</h2>
+  <h2 style="margin-bottom: 15px;">Game setup</h2>
 
-<form action="game.html" method="get">
-  <label for="rows">Number of rows:</label>
-  <input type="number" id="rows" name="rows" min="1" max="42" value="6" />
-  <label for="columns">Number of columns:</label>
-  <input type="number" id="columns" name="columns" min="1" max="42" value="7"/>
-  <button type="submit">Start game</button>
-</form>
+  <form action="game.html" method="get">
+    <label for="rows" style="font-size: 25px;">Number of rows:</label>
+    <input type="number" id="rows" name="rows" min="1" max="42" value="6" />
+    <br>
+    <label for="columns"  style="font-size: 25px;">Number of columns:</label>
+    <input type="number" id="columns" name="columns" min="1" max="42" value="7"/>
+    <input type="submit" value="Start Game">
+  </form>
 
 </body>
 </html>
